@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include "util.h"
-#include <stdio.h>
+
 |.arch x86
 |.actionlist actions
 |
@@ -13,45 +13,6 @@
 #define Dst &state
 #define MAX_NESTING 256
 
-int count = 0;
-
-int continuous_count(char *p)
-{
-    char *ptr = p;
-    int count = 0;
-    while (*ptr == *p) {
-        count++;
-        ptr++;
-    }
-    return count;
-}
-
-
-int check_loops(char *p,int *index,int *mult)
-{
-    int res,offset = 0,_index = 0;
-    if (*(p+1) != '-') return -1;
-    p += 2;
-	
-    while (*p != ']') {
-        if (*p == '[' || *p == '-' ||
-            *p == '.' || *p == ',')
-            return -1;
-        res = continuous_count(p);
-        if (*p == '>') offset += res;
-        else if (*p == '<') offset -= res;
-        else if (*p == '+') {
-            index[_index] = offset;
-            mult[_index] = res;
-            _index++;
-        }
-        p += res;
-   }
-   if (offset != 0) return -1;
-	count = res+2;
-   return _index;
-}
-
 int main(int argc, char *argv[])
 {
 	if (argc < 2) err("Usage: jit-x86 <inputfile>");
@@ -61,7 +22,7 @@ int main(int argc, char *argv[])
 	unsigned int maxpc = 0;
 	int pcstack[MAX_NESTING];
 	int *top = pcstack, *limit = pcstack + MAX_NESTING;
-	int index[255], mult[255], return_value;//, big_index = 0, sum_mul = 0;
+
 	// Function prologue.
 	|  push ebp
 	|  mov  ebp, esp
@@ -71,7 +32,6 @@ int main(int argc, char *argv[])
 	|  mov  PTR, eax
 
 	for (char *p = read_file(argv[1]); *p; p++) {
-		
 		switch (*p) {
 		case '>':
 			|  inc  PTR
@@ -99,39 +59,12 @@ int main(int argc, char *argv[])
 			// Each loop gets two pclabels: at the beginning and end.
 			// We store pclabel offsets in a stack to link the loop
 			// begin and end together.
-
-			//if (*(p+1) == '-' && *p == ']'){
-			return_value = check_loops(p, index, mult);
-			/*return_value = 0;
-			}
-			else  return_value = -1;*/
-
-
-			if (return_value == 0){			
-				|  mov   byte [PTR], 0
-				p += count;
-				count = 0;
-			}
-			/*else if(return_value > 0){
-				for(int t=0; t < return_value; t++){
-					| mov eax, mult[t]
-					| imul eax, p
-					| add  eax, [PTR + t +1]
-					| mov [PTR + t +1], eax
-					sum_mul += mult[t];
-					if(index[t] > big_index)
-					big_index = index[t];				
-				}
-				p += (2 + 2 * big_index + sum_mul);
-			}*/
-			else{	
-				maxpc += 2;
-				*top++ = maxpc;
-				dasm_growpc(&state, maxpc);
-				|  cmp  byte [PTR], 0
-				|  je   =>(maxpc-2)
-				|=>(maxpc-1):				
-			}
+			maxpc += 2;
+			*top++ = maxpc;
+			dasm_growpc(&state, maxpc);
+			|  cmp  byte [PTR], 0
+			|  je   =>(maxpc-2)
+			|=>(maxpc-1):
 			break;
 		case ']':
 			if (top == pcstack) err("Unmatched ']'");
