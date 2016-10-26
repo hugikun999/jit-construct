@@ -45,9 +45,9 @@ int check_loops(char *p,int *index,int *mult)
 			
 			for(int i=0;i <_index;i++)
 			{
-				if(index[_index] == offset)
+				if(index[i] == offset)
 				{
-					mult[_index] += res;
+					mult[i] += res;
 					goto L1;
 				}
 				
@@ -55,9 +55,10 @@ int check_loops(char *p,int *index,int *mult)
             index[_index] = offset;
             mult[_index] = res;
 
-L1:		_index++;
+		_index++;
+		
         }
-        p += res;
+L1:        p += res;
    }
    if (offset != 0) return -1;
 	res_count = p - temp_p;
@@ -119,7 +120,7 @@ int main(int argc, char *argv[])
 				p += res_count;
 				res_count = 0;
 			}
-			/*else if(return_value > 0){
+			else if(return_value > 0){
 				for(int t=0; t < return_value; t++){
 					|// mov eax, mult[t]
 					|// imul eax, p
@@ -129,12 +130,13 @@ int main(int argc, char *argv[])
 					if(index[t] <0 )
                     for(int i=0; i > index[t]; i--)
                         | dec PTR
-					
+						| mov eax , 0	
 					for(int i=0; i < mult[t]; i++)
 					{
-						| inc byte [PTR]
+						| add eax,  41
 						printf("add ");
 					}
+					| mov [PTR],eax
 					if(index[t] >0 )
                     for(int i=0; i < index[t]; i++)
                         | dec PTR
@@ -146,7 +148,7 @@ int main(int argc, char *argv[])
 					printf("%d %d  %d \n",t,mult[t],index[t]);
 				p += res_count;
 				res_count = 0;
-			}*/
+			}
 			else{	
 				maxpc += 2;
 				*top++ = maxpc;
