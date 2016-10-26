@@ -13,7 +13,7 @@
 #define Dst &state
 #define MAX_NESTING 256
 
-int count = 0;
+int res_count = 0;
 
 int continuous_count(char *p)
 {
@@ -29,10 +29,11 @@ int continuous_count(char *p)
 
 int check_loops(char *p,int *index,int *mult)
 {
-    int res,offset = 0,_index = 0;
+    int res=0,offset = 0,_index = 0;
+	char *temp_p = p;
     if (*(p+1) != '-') return -1;
     p += 2;
-	
+	//if (*p != ']') return -1;
     while (*p != ']') {
         if (*p == '[' || *p == '-' ||
             *p == '.' || *p == ',')
@@ -48,7 +49,7 @@ int check_loops(char *p,int *index,int *mult)
         p += res;
    }
    if (offset != 0) return -1;
-	count = res+2;
+	res_count = p - temp_p;
    return _index;
 }
 
@@ -109,8 +110,8 @@ int main(int argc, char *argv[])
 
 			if (return_value == 0){			
 				|  mov   byte [PTR], 0
-				p += count;
-				count = 0;
+				p += res_count;
+				res_count = 0;
 			}
 			/*else if(return_value > 0){
 				for(int t=0; t < return_value; t++){
@@ -134,7 +135,14 @@ int main(int argc, char *argv[])
 			}
 			break;
 		case ']':
-			if (top == pcstack) err("Unmatched ']'");
+			//for(char *i = p-3;i < p+3;i++)
+			//printf("%c ",*i);
+			if (top == pcstack)
+			{
+				for(char *i = p-3;i < p+1;i++)
+				printf("%c ",*i);
+				err("Unmatched ']'");
+			}
 			top--;
 			|  cmp  byte [PTR], 0
 			|  jne  =>(*top-1)
