@@ -42,9 +42,20 @@ int check_loops(char *p,int *index,int *mult)
         if (*p == '>') offset += res;
         else if (*p == '<') offset -= res;
         else if (*p == '+') {
+			
+			for(int i=0;i <_index;i++)
+			{
+				if(index[_index] == offset)
+				{
+					mult[_index] += res;
+					goto L1;
+				}
+				
+			}
             index[_index] = offset;
             mult[_index] = res;
-            _index++;
+
+L1:		_index++;
         }
         p += res;
    }
@@ -62,7 +73,7 @@ int main(int argc, char *argv[])
 	unsigned int maxpc = 0;
 	int pcstack[MAX_NESTING];
 	int *top = pcstack, *limit = pcstack + MAX_NESTING;
-	int index[255], mult[255], return_value;//, big_index = 0, sum_mul = 0;
+	int index[255], mult[255], return_value;
 	// Function prologue.
 	|  push ebp
 	|  mov  ebp, esp
@@ -101,12 +112,7 @@ int main(int argc, char *argv[])
 			// We store pclabel offsets in a stack to link the loop
 			// begin and end together.
 
-			//if (*(p+1) == '-' && *p == ']'){
 			return_value = check_loops(p, index, mult);
-			/*return_value = 0;
-			}
-			else  return_value = -1;*/
-
 
 			if (return_value == 0){			
 				|  mov   byte [PTR], 0
@@ -115,15 +121,31 @@ int main(int argc, char *argv[])
 			}
 			/*else if(return_value > 0){
 				for(int t=0; t < return_value; t++){
-					| mov eax, mult[t]
-					| imul eax, p
-					| add  eax, [PTR + t +1]
-					| mov [PTR + t +1], eax
-					sum_mul += mult[t];
-					if(index[t] > big_index)
-					big_index = index[t];				
+					|// mov eax, mult[t]
+					|// imul eax, p
+					if(index[t] >0 )
+					for(int i=0; i < index[t]; i++)
+						| inc PTR
+					if(index[t] <0 )
+                    for(int i=0; i > index[t]; i--)
+                        | dec PTR
+					
+					for(int i=0; i < mult[t]; i++)
+					{
+						| inc byte [PTR]
+						printf("add ");
+					}
+					if(index[t] >0 )
+                    for(int i=0; i < index[t]; i++)
+                        | dec PTR
+                    if(index[t] <0 )
+                    for(int i=0; i > index[t]; i--)
+                        | inc PTR
 				}
-				p += (2 + 2 * big_index + sum_mul);
+				for(int t=0; t < return_value; t++)
+					printf("%d %d  %d \n",t,mult[t],index[t]);
+				p += res_count;
+				res_count = 0;
 			}*/
 			else{	
 				maxpc += 2;
