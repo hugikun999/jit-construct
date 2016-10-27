@@ -5,6 +5,7 @@ BIN = interpreter \
 CROSS_COMPILE = arm-linux-gnueabihf-
 QEMU_ARM = qemu-arm -L /usr/arm-linux-gnueabihf
 LUA = lua
+SHELL = /bin/bash
 
 all: $(BIN)
 
@@ -89,8 +90,42 @@ test: test_stack jit0-x64 jit0-arm
 test_stack: tests/test_stack.c
 	$(CC) $(CFLAGS) -o $@ $^
 
+
+TEMP = temp_file
+VERSION = orig
+x86-bench-%:
+	touch $(TEMP)
+	make bench-jit-x64 > $(TEMP)
+	{ echo -n "$* " && grep GOOD $(TEMP) | grep  awib;} >> data/awib.txt
+	{ echo -n "$* " && grep GOOD $(TEMP) | grep  man ;} >> data/mandelbrot.txt
+	{ echo -n "$* " && grep GOOD $(TEMP) | grep  hanoi; } >> data/hanoi.txt
+	rm $(TEMP)
+
+x86-bench:
+	cp jit-x86.dasc.orig jit-x86.dasc
+	make
+	make x86-bench-orig
+	cp jit-x86.dasc.con jit-x86.dasc
+	make
+	make x86-bench-contraction
+	cp jit-x86.dasc.rel jit-x86.dasc
+	make
+	make x86-bench-reduceloop
+	cp jit-x86.dasc.opt jit-x86.dasc
+	make
+	make x86-bench-optimization
+
+plot:
+	gnuplot data/awib.gp
+	eog comparison_awib.png
+	gnuplot data/mandelbrot.gp
+	gnuplot data/hanoi.gp
+
+
+
 clean:
 	$(RM) $(BIN) \
 	      hello-x86 hello-x64 hello-arm hello.s \
 	      test_stack jit0-x64 jit0-arm \
-	      jit-x86.h jit-x64.h jit-arm.h
+	      jit-x86.h jit-x64.h jit-arm.h\
+		  data/awib.txt data/mandelbrot.txt data/hanoi.txt
