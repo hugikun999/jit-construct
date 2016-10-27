@@ -42,21 +42,17 @@ int check_loops(char *p,int *index,int *mult)
         if (*p == '>') offset += res;
         else if (*p == '<') offset -= res;
         else if (*p == '+') {
-			
 			for(int i=0;i <_index;i++)
 			{
 				if(index[i] == offset)
 				{
 					mult[i] += res;
 					goto L1;
-				}
-				
+				}	
 			}
             index[_index] = offset;
             mult[_index] = res;
-
-		_index++;
-		
+			_index++;	
         }
 L1:        p += res;
    }
@@ -84,7 +80,7 @@ int main(int argc, char *argv[])
 	|  mov  PTR, eax
 
 	for (char *p = read_file(argv[1]); *p; p++) {
-		
+		//printf("%c",*p);
 		switch (*p) {
 		case '>':
 			|  inc  PTR
@@ -119,33 +115,22 @@ int main(int argc, char *argv[])
 				|  mov   byte [PTR], 0
 				p += res_count;
 				res_count = 0;
+				//printf("clear loop");
 			}
 			else if(return_value > 0){
 				for(int t=0; t < return_value; t++){
-					|// mov eax, mult[t]
-					|// imul eax, p
-					if(index[t] >0 )
-					for(int i=0; i < index[t]; i++)
-						| inc PTR
-					if(index[t] <0 )
-                    for(int i=0; i > index[t]; i--)
-                        | dec PTR
-						| mov eax , 0	
-					for(int i=0; i < mult[t]; i++)
-					{
-						| add eax,  41
-						//printf("add ");
-					}
-					| mov [PTR],eax
-					if(index[t] >0 )
-                    for(int i=0; i < index[t]; i++)
-                        | dec PTR
-                    if(index[t] <0 )
-                    for(int i=0; i > index[t]; i--)
-                        | inc PTR
+
+					| mov al, [PTR]
+					| mov dl, mult[t]
+					| mul dl
+					| mov edx, index[t]
+					| add edx, PTR
+					| add byte [edx], al
+
 				}
-				for(int t=0; t < return_value; t++)
-					printf("%d %d  %d \n",t,mult[t],index[t]);
+				//for(int t=0; t < return_value; t++)
+				//	printf("%d %d  %d \n",t,mult[t],index[t]);
+				| mov  byte [PTR] ,0
 				p += res_count;
 				res_count = 0;
 			}
@@ -164,7 +149,7 @@ int main(int argc, char *argv[])
 			if (top == pcstack)
 			{
 				for(char *i = p-3;i < p+1;i++)
-				printf("%c ",*i);
+				//printf("%c ",*i);
 				err("Unmatched ']'");
 			}
 			top--;
