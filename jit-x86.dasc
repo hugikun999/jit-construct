@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 					for(int i=0; i < mult[t]; i++)
 					{
 						| add eax,  41
-						printf("add ");
+						//printf("add ");
 					}
 					| mov [PTR],eax
 					if(index[t] >0 )
